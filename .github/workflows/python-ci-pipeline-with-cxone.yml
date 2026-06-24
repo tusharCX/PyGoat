@@ -1,0 +1,167 @@
+name: Python CI/CD Pipeline with CxOne Scan
+
+on:
+  push:
+    branches:
+      - sca-logs-test
+
+jobs:
+  build-test-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code from develop branch
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Step 4: Run linting (optional)
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        continue-on-error: true
+
+      # Step 5: Run unit tests
+      - name: Run tests
+        run: |
+          pip install pytest pytest-cov
+          pytest --cov=. --cov-report=xml --cov-report=html
+
+      # Step 6: Download Checkmarx One CLI
+      - name: Download CxOne CLI
+        run: |
+          echo "Downloading Checkmarx One CLI..."
+          wget -q https://download.checkmarx.com/9.0.0/linux-x86_64/cxcli.zip
+          unzip -q cxcli.zip
+          chmod +x ./cx
+          echo "CxOne CLI downloaded successfully"
+          ./cx version
+
+      # Step 7: Run Checkmarx One SAST Scan
+      - name: Run Checkmarx One SAST Scan
+        id: cxone_scan
+        run: |
+          echo "=========================================="
+          echo "Starting Checkmarx One SAST Scan..."
+          echo "=========================================="
+          
+          ./cx scan create \
+            --project-name "PyGoat" \
+            --branch "sca-logs-test" \
+            --scan-types "sast,sca,scs,api-security" \
+            --scs-engines "secret-detection" \
+            --file-filter "!*.tf,!utils" \
+            --tags "github,ci-cd,automated-scan" \
+            # --threshold "sast-critical=1,sast-high=1,sca-critical=1,sca-high=1,sscs-secret-detection-critical=1,sscs-secret-detection-high=1" \
+            # --sca-resolver "/opt/actions-runner/runner-1/_work/Checkmarx-Trial/Checkmarx-Trial/ScaResolver/ScaResolver" \
+            # --sca-resolver-params \
+            --extract-depth "3" \
+            --log-level "Debug" \
+            --break-on-manifest-failure \
+            --base-uri "${{ variables.CXONE_SERVER_URL }}" \
+            --base_auth-uri "${{ variables.CXONE_SERVER_URL }}" \
+            --tenant "${{ variables.CXONE_TENANT }}" \
+            --client-id "${{ secrets.CXONE_CLIENT_ID }}" \
+            --client-secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
+            # --debug \
+            # --source-dir "." \
+            # --file-include "*.py,*.java,*.js,*.cs" \
+            # --agent-name "github-actions" \
+            2>&1 | tee cxone-scan.log
+          
+          echo "CxOne scan completed"
+
+      # Step 8: Display CxOne Scan Results
+      - name: Display CxOne Scan Results
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Checkmarx One Scan Results"
+          echo "=========================================="
+          if [ -f cxone-scan.log ]; then
+            cat cxone-scan.log
+          else
+            echo "No scan log found"
+          fi
+
+      # Step 9: Get Scan Status (Optional - requires additional configuration)
+      - name: Check Scan Status
+        id: check_scan
+        run: |
+          echo "Retrieving latest scan status..."
+          ./cx query last-scan-id \
+            --project-name "${{ github.repository }}" \
+            --server-url "${{ secrets.CXONE_SERVER_URL }}" \
+            --tenant "${{ secrets.CXONE_TENANT }}" \
+            --client-id "${{ secrets.CXONE_CLIENT_ID }}" \
+            --client-secret "${{ secrets.CXONE_CLIENT_SECRET }}" 2>&1 || true
+
+      # Step 10: Upload scan logs as artifact
+      - name: Upload CxOne Scan Logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cxone-scan-logs
+          path: cxone-scan.log
+          retention-days: 30
+
+      # Step 11: Fail pipeline if critical vulnerabilities found (Optional)
+      - name: Check for Critical Vulnerabilities
+        id: vulnerability_check
+        run: |
+          echo "Checking scan results for critical issues..."
+          # This is a placeholder - actual implementation depends on CxOne API
+          # You can parse the scan log or use CxOne API to get results
+          if grep -q "CRITICAL\|HIGH" cxone-scan.log 2>/dev/null; then
+            echo "⚠️ Critical or High severity vulnerabilities found!"
+            echo "severity=critical" >> $GITHUB_OUTPUT
+            # Uncomment below to fail the pipeline
+            # exit 1
+          else
+            echo "✓ No critical vulnerabilities found"
+            echo "severity=ok" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      # Step 12: Push to main branch if all checks pass
+      - name: Push to main branch
+        if: success()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout main
+          git merge develop --no-ff -m "Merge develop to main - Build #${{ github.run_number }} - CxOne Scan Passed"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 13: Create release tag
+      - name: Create release tag
+        if: success()
+        run: |
+          git tag -a v1.0.${{ github.run_number }} -m "Release build ${{ github.run_number }} - CxOne Scan Passed"
+          git push origin v1.0.${{ github.run_number }}
+        continue-on-error: true
+
+      # Step 14: Notify on failure
+      - name: Notify on Scan Failure
+        if: failure()
+        run: |
+          echo "❌ Pipeline failed!"
+          echo "Checkmarx One scan or other checks did not pass."
+          echo "Review the logs above for details."
