@@ -51,7 +51,7 @@ jobs:
           chmod +x ./cx
           echo "CxOne CLI downloaded successfully"
           ./cx version
-          echo "$secrets.CXONE_TENANT"
+          echo "${{ secrets.CXONE_CLIENT_ID }}"
 
       # Step 7: Run Checkmarx One SAST Scan
       - name: Run Checkmarx One SAST Scan
@@ -78,12 +78,12 @@ jobs:
             --break-on-manifest-failure \
             --cx_base_uri "https://ind.ast.checkmarx.net/" \
             --cx_base_auth_uri "https://ind.ast.checkmarx.net/" \
-            --cx_tenant "${{ secrets.CXONE_TENANT }}" \
+            --cx_tenant "cx_ps_tushar_c" \
             --cx_client_id "${{ secrets.CXONE_CLIENT_ID }}" \
             --cx_client_secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
             # --base-uri "https://ind.ast.checkmarx.net/" \
             # --base_auth-uri "https://ind.ast.checkmarx.net/" \
-            # --tenant "${{ secrets.CXONE_TENANT }}" \
+            # --tenant "cx_ps_tushar_c" \
             # --client-id "${{ secrets.CXONE_CLIENT_ID }}" \
             # --client-secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
             # --debug \
