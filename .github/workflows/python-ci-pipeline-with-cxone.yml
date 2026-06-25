@@ -73,9 +73,9 @@ jobs:
             --extract-depth "3" \
             --log-level "Debug" \
             --break-on-manifest-failure \
-            --base-uri "${{ variables.CXONE_SERVER_URL }}" \
-            --base_auth-uri "${{ variables.CXONE_SERVER_URL }}" \
-            --tenant "${{ variables.CXONE_TENANT }}" \
+            --base-uri "https://ind.ast.checkmarx.net/" \
+            --base_auth-uri "https://ind.ast.checkmarx.net/" \
+            --tenant "${{ secrets.CXONE_TENANT }}" \
             --client-id "${{ secrets.CXONE_CLIENT_ID }}" \
             --client-secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
             # --debug \
@@ -114,7 +114,7 @@ jobs:
       # Step 10: Upload scan logs as artifact
       - name: Upload CxOne Scan Logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cxone-scan-logs
           path: cxone-scan.log
