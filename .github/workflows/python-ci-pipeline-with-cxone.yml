@@ -62,6 +62,7 @@ jobs:
           
           ./cx scan create \
             --project-name "PyGoat" \
+            -s "https://github.com/tusharCX/PyGoat" \
             --branch "sca-logs-test" \
             --scan-types "sast,sca,scs,api-security" \
             --scs-engines "secret-detection" \
@@ -73,11 +74,16 @@ jobs:
             --extract-depth "3" \
             --log-level "Debug" \
             --break-on-manifest-failure \
-            --base-uri "https://ind.ast.checkmarx.net/" \
-            --base_auth-uri "https://ind.ast.checkmarx.net/" \
-            --tenant "${{ secrets.CXONE_TENANT }}" \
-            --client-id "${{ secrets.CXONE_CLIENT_ID }}" \
-            --client-secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
+            --cx_base_uri "https://ind.ast.checkmarx.net/" \
+            --cx_base_auth_uri "https://ind.ast.checkmarx.net/" \
+            --cx_tenant "${{ secrets.CXONE_TENANT }}" \
+            --cx_client_id "${{ secrets.CXONE_CLIENT_ID }}" \
+            --cx_client_secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
+            # --base-uri "https://ind.ast.checkmarx.net/" \
+            # --base_auth-uri "https://ind.ast.checkmarx.net/" \
+            # --tenant "${{ secrets.CXONE_TENANT }}" \
+            # --client-id "${{ secrets.CXONE_CLIENT_ID }}" \
+            # --client-secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
             # --debug \
             # --source-dir "." \
             # --file-include "*.py,*.java,*.js,*.cs" \
