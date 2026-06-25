@@ -51,7 +51,7 @@ jobs:
           chmod +x ./cx
           echo "CxOne CLI downloaded successfully"
           ./cx version
-          echo "${{ secrets.CXONE_CLIENT_ID }}"
+          echo "${{secrets.CXONE_CLIENT_ID}}"
 
       # Step 7: Run Checkmarx One SAST Scan
       - name: Run Checkmarx One SAST Scan
