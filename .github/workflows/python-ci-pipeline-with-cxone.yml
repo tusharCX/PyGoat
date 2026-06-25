@@ -62,6 +62,7 @@ jobs:
           
           ./cx scan create \
             --project-name "PyGoat" \
+            --cx_apikey "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI4ZTM1YjIwOS0xZjFmLTQwMjktOWU2My05Y2YyOGM5OTQ4OWEifQ.eyJpYXQiOjE3ODIzODM3NDYsImp0aSI6IjE4MzIzZWIzLWY3YTctNGZkNi1iYzdjLTFjZDIxODZjNTFlYiIsImlzcyI6Imh0dHBzOi8vaW5kLmlhbS5jaGVja21hcngubmV0L2F1dGgvcmVhbG1zL2N4X3BzX3R1c2hhcl9jIiwiYXVkIjoiaHR0cHM6Ly9pbmQuaWFtLmNoZWNrbWFyeC5uZXQvYXV0aC9yZWFsbXMvY3hfcHNfdHVzaGFyX2MiLCJzdWIiOiJiNjJhN2Y5YS0wMDJkLTQwMmYtYTdjZi1kNDBmYzIzZGVjMzQiLCJ0eXAiOiJPZmZsaW5lIiwiYXpwIjoiYXN0LWFwcCIsInNpZCI6ImQzNjUwNmIxLWM2MTMtNDkwZS05NWI1LTBiNTdkMDE2MDU5YiIsInNjb3BlIjoicHJvZmlsZSByb2xlcyBpYW0tYXBpIGFzdC1hcGkgZW1haWwgb2ZmbGluZV9hY2Nlc3MifQ.qYbFwBlmrrhW2ZEJxXxHyNVt2NELrpcL_tJhbj8sZKUgNfhFhuQpB8oUQMbkrOANr4YDnxrAjQ_66dCNcbtLyw" \
             -s "https://github.com/tusharCX/PyGoat" \
             --branch "sca-logs-test" \
             --scan-types "sast,sca,scs,api-security" \
@@ -74,11 +75,11 @@ jobs:
             --extract-depth "3" \
             --log-level "Debug" \
             --break-on-manifest-failure \
-            --cx_base_uri "https://ind.ast.checkmarx.net/" \
-            --cx_base_auth_uri "https://ind.ast.checkmarx.net/" \
-            --cx_tenant "${{ secrets.CXONE_TENANT }}" \
-            --cx_client_id "${{ secrets.CXONE_CLIENT_ID }}" \
-            --cx_client_secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
+            # --cx_base_uri "https://ind.ast.checkmarx.net/" \
+            # --cx_base_auth_uri "https://ind.ast.checkmarx.net/" \
+            # --cx_tenant "${{ secrets.CXONE_TENANT }}" \
+            # --cx_client_id "${{ secrets.CXONE_CLIENT_ID }}" \
+            # --cx_client_secret "${{ secrets.CXONE_CLIENT_SECRET }}" \
             # --base-uri "https://ind.ast.checkmarx.net/" \
             # --base_auth-uri "https://ind.ast.checkmarx.net/" \
             # --tenant "${{ secrets.CXONE_TENANT }}" \
